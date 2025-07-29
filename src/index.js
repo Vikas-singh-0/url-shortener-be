@@ -5,7 +5,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const limiter = require('./middleware/rate-limiter.middleware');
-const redis = require('./configs/redis');
+// const redis = require('./configs/redis');
 const connectDb = require('./configs/db');
 const helmet = require('helmet');
 
@@ -27,15 +27,17 @@ app.use(helmet());
 // health check route
 
 // Redis test
-app.get("/test-redis", async (req, res) => {
-  try {
-    await redis.set("message", "Hello Redis!");
-    const value = await redis.get("message");
-    res.send({ value });
-  } catch (err) {
-    res.status(500).send("Redis Error");
-  }
-});
+// app.get("/test-redis", async (req, res) => {
+//   console.log(req.get("host"));
+  
+//   try {
+//     await redis.set("message", "Hello Redis!");
+//     const value = await redis.get("message");
+//     res.send({ value });
+//   } catch (err) {
+//     res.status(500).send("Redis Error");
+//   }
+// });
 
 app.get('/ping', (req, res) => {
   res.status(200).json({ message: 'Pong!' });
@@ -47,7 +49,7 @@ app.use('/auth', require('./routes/auth.routes'));
 // Graceful shutdown
 process.on("SIGINT", async () => {
   console.log("🛑 Gracefully shutting down");
-  await redis.quit();
+  // await redis.quit();
   await mongoose.disconnect();
   process.exit(0);
 });
@@ -55,6 +57,5 @@ process.on("SIGINT", async () => {
 // MongoDB connection
 app.listen(PORT, async () => {
   await connectDb();
-  redis
   console.log(`Server is running on port ${PORT}`);
 });

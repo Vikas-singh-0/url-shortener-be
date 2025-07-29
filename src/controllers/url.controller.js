@@ -1,4 +1,4 @@
-const redis = require("../configs/redis");
+// const redis = require("../configs/redis");
 const urlService = require("./../services/url.service");
 
 exports.createShortUrl = async (req, res) => {
@@ -10,7 +10,7 @@ exports.createShortUrl = async (req, res) => {
   }
 
   try {
-    const shortUrl = await urlService.createShorturl(originalUrl, expiresAt, req.user?.id);
+    const shortUrl = await urlService.createShorturl(originalUrl, expiresAt, req.user?.id, req);
     return res.status(201).json({ shortUrl });
   } catch (error) {
     console.error("Error creating short URL:", error);
@@ -23,13 +23,13 @@ exports.redirectUrl = async (req, res) => {
   const startTime = Date.now();
   try {
     // try redis first
-    const cachedUrl = await redis.get(shortCode);
-    console.log('🔵 Cache Check:', cachedUrl);
+    // const cachedUrl = await redis.get(shortCode);
+    // console.log('🔵 Cache Check:', cachedUrl);
     
-    if (cachedUrl) {
-      console.log("Cache hit");
-      return res.redirect(cachedUrl);
-    }
+    // if (cachedUrl) {
+    //   console.log("Cache hit");
+    //   return res.redirect(cachedUrl);
+    // }
     console.log("Cache miss, fetching from DB");
     // if not found in redis, fetch from DB
     const originalUrl = await urlService.getOriginalUrl(shortCode);
@@ -38,14 +38,14 @@ exports.redirectUrl = async (req, res) => {
     }
 
     // cache the original URL in Redis
-    const cacheDuration = 60 * 60; // 1 hour
-    const ttlSeconds = originalUrl.expiresAt
-      ? Math.floor((originalUrl?.expiresAt - Date.now()) / 1000)
-      : cacheDuration;
-    console.log(`Caching URL for ${ttlSeconds} seconds`, originalUrl);
+    // const cacheDuration = 60 * 60; // 1 hour
+    // const ttlSeconds = originalUrl.expiresAt
+    //   ? Math.floor((originalUrl?.expiresAt - Date.now()) / 1000)
+    //   : cacheDuration;
+    // console.log(`Caching URL for ${ttlSeconds} seconds`, originalUrl);
 
-    await redis.setex(shortCode, ttlSeconds, originalUrl);
-    console.log(`🔵 Cache MISS: ${Date.now() - startTime}ms`);
+    // await redis.setex(shortCode, ttlSeconds, originalUrl);
+    // console.log(`🔵 Cache MISS: ${Date.now() - startTime}ms`);
 
     return res.redirect(originalUrl);
   } catch (error) {

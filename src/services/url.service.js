@@ -1,7 +1,7 @@
 const urlModal = require('../modals/url.modal');
 const base62 = require('../utils/base64');
 
-const createShorturl = async (originalUrl, expiresAt = null, user = null) => {
+const createShorturl = async (originalUrl, expiresAt = null, user = null, req) => {
   const existing = await urlModal.findOne({ originalUrl });
   if (existing) return `${process.env.BASE_URL}/${existing.shortCode}`;
 
@@ -14,7 +14,7 @@ const createShorturl = async (originalUrl, expiresAt = null, user = null) => {
     newUrl.owner = user;
   }
   await newUrl.save();
-  return `${process.env.BASE_URL}/${newUrl.shortCode}`;
+  return `${req.get("host")}/${newUrl.shortCode}`;
 }
 
 const getOriginalUrl = async (shortCode) => {

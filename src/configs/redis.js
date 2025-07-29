@@ -1,16 +1,11 @@
 const Redis = require("ioredis");
-const redis = new Redis(
-  {
-    host: "127.0.0.1",
-    port: 6379,
+const redis = new Redis({
+  host: process.env.REDIS_HOST || 'localhost',
+  port: process.env.REDIS_PORT || 6379,
+  retryStrategy(times) {
+    return Math.min(times * 50, 2000); // reconnect delay
   },
-  {
-    maxRetriesPerRequest: 5, // Set maximum retries for each request
-    maxRetriesPerRequest: null, // Disable automatic retries
-    enableReadyCheck: false, // Enable ready check to ensure Redis is ready before using
-    lazyConnect: false, // Connect lazily to avoid blocking the event loop
-  }
-);
+});
 
 redis.on("connect", () => {
   console.log("Redis connected successfully");
